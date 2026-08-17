@@ -1,14 +1,22 @@
+'use client';
+
 import { createAuthClient } from 'better-auth/react';
+import { inferAdditionalFields } from 'better-auth/client/plugins';
 
 export const authClient = createAuthClient({
   baseURL: process.env.NEXT_PUBLIC_AUTH_URL,
+
   fetchOptions: {
     credentials: 'include',
   },
+
+  plugins: [
+    inferAdditionalFields({
+      user: {
+        role: {
+          type: 'string',
+        },
+      },
+    }),
+  ],
 });
-
-
-// /api/auth/sign-up/email
-// /api/auth/sign-in/email
-// /api/auth/get-session
-// /api/auth/sign-out

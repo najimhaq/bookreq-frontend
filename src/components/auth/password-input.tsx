@@ -1,3 +1,4 @@
+// src/components/auth/password-input.tsx
 'use client';
 
 import type { ComponentProps } from 'react';

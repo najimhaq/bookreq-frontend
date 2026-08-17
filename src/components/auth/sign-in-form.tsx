@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { signInSchema, type SignInInput } from '@/features/auth/auth.schema';
 import { authClient } from '@/lib/auth-client';
+import toast from 'react-hot-toast';
 
 export function SignInForm() {
   const router = useRouter();
@@ -58,7 +59,11 @@ export function SignInForm() {
     }
 
     await refetch();
-    window.location.replace('/dashboard');
+
+    toast.success('Signed in successfully!');
+
+    router.replace('/dashboard');
+    router.refresh();
   };
 
   return (

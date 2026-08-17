@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { signUpSchema, type SignUpInput } from '@/features/auth/auth.schema';
 import { authClient } from '@/lib/auth-client';
+import toast from 'react-hot-toast';
 
 export function SignUpForm() {
   const router = useRouter();
@@ -46,6 +47,7 @@ export function SignUpForm() {
     const { error } = await authClient.signUp.email({
       name: values.name,
       email: values.email,
+      role: 'user',
       password: values.password,
     });
 
@@ -58,7 +60,11 @@ export function SignUpForm() {
     }
 
     await refetch();
-    window.location.replace('/dashboard');
+
+    toast.success('Your library has been created!');
+
+    router.replace('/dashboard');
+    router.refresh();
   };
 
   return (

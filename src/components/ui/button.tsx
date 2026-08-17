@@ -3,18 +3,22 @@ import type { ComponentProps } from 'react';
 import { cn } from '@/lib/utils';
 
 type ButtonProps = ComponentProps<'button'> & {
-  variant?: 'primary' | 'secondary' | 'ghost';
+  variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
   size?: 'sm' | 'md' | 'lg';
   isLoading?: boolean;
 };
 
 const variantClasses = {
   primary:
-    'bg-primary text-white hover:bg-primary-hover hover:shadow-[0_12px_30px_rgba(109,93,251,0.28)]',
+    'bg-primary text-white hover:bg-primary-hover hover:shadow-[0_12px_30px_rgba(24,59,43,0.24)]',
+
   secondary:
-    'border border-border bg-surface text-text-primary hover:border-[rgba(129,117,255,0.6)] hover:bg-surface-elevated',
-  ghost:
-    'text-text-secondary hover:bg-surface-elevated hover:text-text-primary',
+    'border border-border bg-surface text-primary hover:border-accent hover:bg-[#fff7f0]',
+
+  ghost: 'text-text-secondary hover:bg-[#efe5d5] hover:text-primary',
+
+  danger:
+    'bg-danger text-white hover:bg-[#9d3030] hover:shadow-[0_12px_30px_rgba(182,61,61,0.2)]',
 } as const;
 
 const sizeClasses = {
@@ -37,7 +41,9 @@ export function Button({
       type='button'
       disabled={disabled || isLoading}
       className={cn(
-        'inline-flex items-center justify-center gap-2 rounded-xl font-bold transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-canvas',
+        'inline-flex items-center justify-center gap-2 rounded-xl font-bold transition-all duration-200',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-canvas',
+        'disabled:cursor-not-allowed disabled:opacity-60',
         variantClasses[variant],
         sizeClasses[size],
         className

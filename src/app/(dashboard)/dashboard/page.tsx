@@ -1,241 +1,132 @@
-// src/app/(dashboard)/dashboard/page.tsx
 'use client';
 
-import { useEffect, useState } from 'react';
+import { BookOpen, BookPlus, Clock3, LibraryBig } from 'lucide-react';
 import Link from 'next/link';
-import { BookOpen, BookMarked, CheckCircle, Clock, Plus } from 'lucide-react';
 
-interface Book {
-  id: string;
-  title: string;
-  author: string;
-  genre: string;
-  readingStatus: 'READING' | 'COMPLETED' | 'WANT_TO_READ';
-  rating?: number;
-  coverImage?: string;
-}
+import { Button } from '@/components/ui/button';
+import { authClient } from '@/lib/auth-client';
 
-interface Stats {
-  total: number;
-  reading: number;
-  completed: number;
-  wantToRead: number;
-}
+const stats = [
+  {
+    label: 'My books',
+    value: '0',
+    icon: LibraryBig,
+    iconClassName: 'bg-[#e7f0e8] text-primary',
+  },
+  {
+    label: 'Currently reading',
+    value: '0',
+    icon: BookOpen,
+    iconClassName: 'bg-[#fff0d3] text-[#9a6515]',
+  },
+  {
+    label: 'Want to read',
+    value: '0',
+    icon: Clock3,
+    iconClassName: 'bg-[#f8e4de] text-accent',
+  },
+] as const;
 
 export default function DashboardPage() {
-  const [books, setBooks] = useState<Book[]>([]);
-  const [stats, setStats] = useState<Stats>({
-    total: 0,
-    reading: 0,
-    completed: 0,
-    wantToRead: 0,
-  });
-  const [loading, setLoading] = useState(true);
+  const { data: session, isPending } = authClient.useSession();
 
-  useEffect(() => {
-    fetchBooks();
-  }, []);
-
-  const fetchBooks = async () => {
-    try {
-      const response = await fetch('/api/books');
-      if (response.ok) {
-        const data = await response.json();
-        setBooks(data.data);
-        updateStats(data.data);
-      }
-    } catch (error) {
-      console.error('Error fetching books:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const updateStats = (books: Book[]) => {
-    const reading = books.filter((b) => b.readingStatus === 'READING').length;
-    const completed = books.filter(
-      (b) => b.readingStatus === 'COMPLETED'
-    ).length;
-    const wantToRead = books.filter(
-      (b) => b.readingStatus === 'WANT_TO_READ'
-    ).length;
-
-    setStats({
-      total: books.length,
-      reading,
-      completed,
-      wantToRead,
-    });
-  };
-
-  // Get status color
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'READING':
-        return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400';
-      case 'COMPLETED':
-        return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400';
-      case 'WANT_TO_READ':
-        return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400';
-      default:
-        return 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400';
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className='flex min-h-screen items-center justify-center'>
-        <div className='h-12 w-12 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent'></div>
-      </div>
-    );
-  }
+  const firstName = session?.user.name?.split(' ')[0] ?? 'Reader';
 
   return (
-    <div className='min-h-screen bg-slate-50 dark:bg-slate-950'>
-      <div className='container mx-auto px-4 py-8'>
-        {/* Header */}
-        <div className='mb-8 flex items-center justify-between'>
-          <div>
-            <h1 className='text-3xl font-bold text-slate-900 dark:text-white'>
-              My Library
-            </h1>
-            <p className='text-slate-600 dark:text-slate-400'>
-              Welcome back! Here&apos;s your reading summary
-            </p>
+    <div className='space-y-8'>
+      <section className='relative overflow-hidden rounded-3xl border border-border bg-surface p-6 shadow-[0_12px_30px_rgba(29,39,33,0.07)] sm:p-8'>
+        <div className='absolute -right-20 -top-24 size-64 rounded-full bg-[#fff0d3] blur-3xl' />
+        <div className='absolute -bottom-24 left-1/3 size-52 rounded-full bg-[#e7f0e8] blur-3xl' />
+
+        <div className='relative'>
+          <p className='text-sm font-bold uppercase tracking-[0.16em] text-accent'>
+            Your personal library
+          </p>
+
+          <h2 className='mt-3 font-[family-name:var(--font-display)] text-3xl font-semibold text-primary sm:text-4xl'>
+            {isPending ? 'Welcome back...' : `Welcome back, ${firstName}.`}
+          </h2>
+
+          <p className='mt-3 max-w-2xl leading-7 text-text-secondary'>
+            Your shelf is ready for its first story. Add a book, organize your
+            reading list, and make this library your own.
+          </p>
+
+          <div className='mt-6'>
+            <Link href='/dashboard/books/new'>
+              <Button size='lg'>
+                <BookPlus className='size-4' />
+                Add your first book
+              </Button>
+            </Link>
           </div>
-          <Link
-            href='/books/new'
-            className='inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-white transition hover:bg-indigo-700 hover:shadow-lg hover:shadow-indigo-600/30'
-          >
-            <Plus className='mr-2 h-5 w-5' />
-            Add Book
+        </div>
+      </section>
+
+      <section>
+        <div className='mb-4 flex items-end justify-between gap-4'>
+          <div>
+            <p className='text-sm font-bold uppercase tracking-[0.14em] text-accent'>
+              At a glance
+            </p>
+
+            <h2 className='mt-1 font-[family-name:var(--font-display)] text-2xl font-semibold text-primary'>
+              Your reading progress
+            </h2>
+          </div>
+        </div>
+
+        <div className='grid gap-4 sm:grid-cols-3'>
+          {stats.map((stat) => {
+            const Icon = stat.icon;
+
+            return (
+              <article
+                key={stat.label}
+                className='rounded-2xl border border-border bg-surface p-5'
+              >
+                <div
+                  className={`grid size-11 place-items-center rounded-xl ${stat.iconClassName}`}
+                >
+                  <Icon className='size-5' />
+                </div>
+
+                <p className='mt-5 text-3xl font-bold text-primary'>
+                  {stat.value}
+                </p>
+
+                <p className='mt-1 text-sm font-medium text-text-secondary'>
+                  {stat.label}
+                </p>
+              </article>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className='rounded-3xl border border-dashed border-[#c9b99d] bg-[#fffaf0] px-6 py-10 text-center sm:px-10'>
+        <div className='mx-auto max-w-lg'>
+          <div className='mx-auto grid size-12 place-items-center rounded-2xl bg-[#fff0d3] text-[#9a6515]'>
+            <BookOpen className='size-6' />
+          </div>
+
+          <h2 className='mt-5 font-[family-name:var(--font-display)] text-2xl font-semibold text-primary'>
+            Your shelf is waiting
+          </h2>
+
+          <p className='mt-3 leading-7 text-text-secondary'>
+            Add your first book to start building a reading history that feels
+            truly yours.
+          </p>
+
+          <Link href='/dashboard/books/new' className='mt-6 inline-flex'>
+            <Button variant='secondary'>
+              Add a book
+              <BookPlus className='size-4' />
+            </Button>
           </Link>
         </div>
-
-        {/* Stats Grid */}
-        <div className='mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4'>
-          <div className='rounded-xl bg-white p-6 shadow-sm dark:bg-slate-800'>
-            <div className='flex items-center justify-between'>
-              <div>
-                <p className='text-sm text-slate-600 dark:text-slate-400'>
-                  Total Books
-                </p>
-                <p className='text-3xl font-bold text-slate-900 dark:text-white'>
-                  {stats.total}
-                </p>
-              </div>
-              <div className='rounded-full bg-indigo-100 p-3 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400'>
-                <BookOpen className='h-6 w-6' />
-              </div>
-            </div>
-          </div>
-
-          <div className='rounded-xl bg-white p-6 shadow-sm dark:bg-slate-800'>
-            <div className='flex items-center justify-between'>
-              <div>
-                <p className='text-sm text-slate-600 dark:text-slate-400'>
-                  Currently Reading
-                </p>
-                <p className='text-3xl font-bold text-yellow-600 dark:text-yellow-400'>
-                  {stats.reading}
-                </p>
-              </div>
-              <div className='rounded-full bg-yellow-100 p-3 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400'>
-                <BookMarked className='h-6 w-6' />
-              </div>
-            </div>
-          </div>
-
-          <div className='rounded-xl bg-white p-6 shadow-sm dark:bg-slate-800'>
-            <div className='flex items-center justify-between'>
-              <div>
-                <p className='text-sm text-slate-600 dark:text-slate-400'>
-                  Completed
-                </p>
-                <p className='text-3xl font-bold text-green-600 dark:text-green-400'>
-                  {stats.completed}
-                </p>
-              </div>
-              <div className='rounded-full bg-green-100 p-3 text-green-600 dark:bg-green-900/30 dark:text-green-400'>
-                <CheckCircle className='h-6 w-6' />
-              </div>
-            </div>
-          </div>
-
-          <div className='rounded-xl bg-white p-6 shadow-sm dark:bg-slate-800'>
-            <div className='flex items-center justify-between'>
-              <div>
-                <p className='text-sm text-slate-600 dark:text-slate-400'>
-                  Want to Read
-                </p>
-                <p className='text-3xl font-bold text-blue-600 dark:text-blue-400'>
-                  {stats.wantToRead}
-                </p>
-              </div>
-              <div className='rounded-full bg-blue-100 p-3 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'>
-                <Clock className='h-6 w-6' />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Recent Books */}
-        <div>
-          <h2 className='mb-4 text-xl font-semibold text-slate-900 dark:text-white'>
-            Recently Added
-          </h2>
-          {books.length === 0 ? (
-            <div className='rounded-xl bg-white p-12 text-center dark:bg-slate-800'>
-              <BookOpen className='mx-auto h-12 w-12 text-slate-400' />
-              <h3 className='mt-4 text-lg font-semibold text-slate-900 dark:text-white'>
-                No books yet
-              </h3>
-              <p className='text-slate-600 dark:text-slate-400'>
-                Start adding your books to build your library
-              </p>
-              <Link
-                href='/books/new'
-                className='mt-4 inline-block rounded-lg bg-indigo-600 px-6 py-2 text-white transition hover:bg-indigo-700'
-              >
-                Add Your First Book
-              </Link>
-            </div>
-          ) : (
-            <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
-              {books.slice(0, 6).map((book) => (
-                <div
-                  key={book.id}
-                  className='rounded-xl bg-white p-4 shadow-sm transition hover:shadow-md dark:bg-slate-800'
-                >
-                  <div className='flex items-start justify-between'>
-                    <div className='flex-1'>
-                      <h3 className='font-semibold text-slate-900 dark:text-white'>
-                        {book.title}
-                      </h3>
-                      <p className='text-sm text-slate-600 dark:text-slate-400'>
-                        {book.author}
-                      </p>
-                      <span
-                        className={`mt-2 inline-block rounded-full px-2 py-1 text-xs font-medium ${getStatusColor(
-                          book.readingStatus
-                        )}`}
-                      >
-                        {book.readingStatus.replace('_', ' ')}
-                      </span>
-                    </div>
-                    {book.rating && (
-                      <div className='flex items-center text-yellow-500'>
-                        <span className='text-sm font-medium'>★</span>
-                        <span className='ml-1 text-sm'>{book.rating}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
+      </section>
     </div>
   );
 }
