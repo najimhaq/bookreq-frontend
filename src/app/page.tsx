@@ -20,7 +20,7 @@ export default function HomePage() {
                 Your personal reading room
               </div>
 
-              <h1 className='font-[family-name:var(--font-display)] text-5xl font-semibold leading-tight tracking-tight text-primary md:text-6xl lg:text-7xl'>
+              <h1 className='font-display text-5xl font-semibold leading-tight tracking-tight text-primary md:text-6xl lg:text-7xl'>
                 Build a library that feels{' '}
                 <span className='text-accent'>like yours.</span>
               </h1>

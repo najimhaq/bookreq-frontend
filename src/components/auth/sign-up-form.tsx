@@ -1,26 +1,26 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
+import { ArrowRight, BookMarked } from 'lucide-react';
 import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
-import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 
+import { PasswordInput } from '@/components/auth/password-input';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { PasswordInput } from '@/components/auth/password-input';
 import { signUpSchema, type SignUpInput } from '@/features/auth/auth.schema';
 import { authClient } from '@/lib/auth-client';
 
 export function SignUpForm() {
   const router = useRouter();
 
- const {
-   data: session,
-   isPending: isSessionLoading,
-   refetch,
- } = authClient.useSession();
+  const {
+    data: session,
+    isPending: isSessionLoading,
+    refetch,
+  } = authClient.useSession();
 
   const {
     register,
@@ -51,37 +51,39 @@ export function SignUpForm() {
 
     if (error) {
       setError('root', {
-        message: error.message ?? 'Unable to create your account.',
+        message: error.message ?? 'Unable to create your library.',
       });
 
       return;
     }
 
     await refetch();
-
     window.location.replace('/dashboard');
   };
-  return (
-    <div className='rounded-2xl border border-border bg-surface/85 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.2)] backdrop-blur-sm sm:p-8'>
-      <div>
-        <p className='text-sm font-bold uppercase tracking-[0.16em] text-accent'>
-          Get started
-        </p>
 
-        <h1 className='mt-3 text-3xl font-bold tracking-[-0.05em] text-text-primary'>
-          Create your workspace.
+  return (
+    <div className='relative overflow-hidden rounded-3xl border border-border bg-surface p-6 shadow-[0_20px_60px_rgba(29,39,33,0.12)] sm:p-8'>
+      <div className='absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-accent via-gold to-primary' />
+
+      <div>
+        <div className='inline-flex items-center gap-2 rounded-full border border-[#dfc895] bg-[#fff7e8] px-3 py-1.5 text-xs font-bold uppercase tracking-[0.14em] text-primary'>
+          <BookMarked className='size-3.5 text-accent' />
+          Begin your collection
+        </div>
+
+        <h1 className='mt-5 font-display text-4xl font-semibold leading-tight tracking-tight text-primary'>
+          Create your library.
         </h1>
 
         <p className='mt-3 text-sm leading-6 text-text-secondary'>
-          Start organizing your team&apos;s work with clarity.
+          A quiet place to collect the books you own, love, and want to read
+          next.
         </p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className='mt-8 space-y-5'>
         <label className='block space-y-2'>
-          <span className='text-sm font-semibold text-text-primary'>
-            Full name
-          </span>
+          <span className='text-sm font-semibold text-primary'>Your name</span>
 
           <Input
             type='text'
@@ -99,7 +101,7 @@ export function SignUpForm() {
         </label>
 
         <label className='block space-y-2'>
-          <span className='text-sm font-semibold text-text-primary'>
+          <span className='text-sm font-semibold text-primary'>
             Email address
           </span>
 
@@ -119,9 +121,7 @@ export function SignUpForm() {
         </label>
 
         <label className='block space-y-2'>
-          <span className='text-sm font-semibold text-text-primary'>
-            Password
-          </span>
+          <span className='text-sm font-semibold text-primary'>Password</span>
 
           <PasswordInput
             autoComplete='new-password'
@@ -144,7 +144,7 @@ export function SignUpForm() {
         {errors.root ? (
           <div
             role='alert'
-            className='rounded-xl border border-[rgba(251,113,133,0.35)] bg-[rgba(251,113,133,0.1)] px-3.5 py-3 text-sm font-medium text-[#FDA4AF]'
+            className='rounded-xl border border-[#dfaaa0] bg-[#fff0ed] px-3.5 py-3 text-sm font-medium text-danger'
           >
             {errors.root.message}
           </div>
@@ -156,16 +156,16 @@ export function SignUpForm() {
           isLoading={isSubmitting}
           className='w-full'
         >
-          Create account
+          Build my library
           <ArrowRight className='size-4' />
         </Button>
       </form>
 
-      <p className='mt-6 text-center text-sm text-text-secondary'>
-        Already have an account?{' '}
+      <p className='mt-7 text-center text-sm text-text-secondary'>
+        Already have a library?{' '}
         <Link
           href='/sign-in'
-          className='font-bold text-[#B6AFFF] transition-colors hover:text-[#D1CDFF]'
+          className='font-bold text-accent transition-colors hover:text-accent-hover'
         >
           Sign in
         </Link>
