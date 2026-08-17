@@ -6,7 +6,7 @@ import { Logo } from './logo';
 
 const footerLinks = [
   { label: 'Features', href: '#features' },
-  { label: 'My bookshelf', href: '/books' },
+  { label: 'My bookshelf', href: '/dashboard/books' },
   { label: 'Sign in', href: '/sign-in' },
   { label: 'Create account', href: '/sign-up' },
 ] as const;

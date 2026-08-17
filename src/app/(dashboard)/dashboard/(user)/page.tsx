@@ -45,13 +45,16 @@ export default function DashboardPage() {
   const { data: session, isPending } = authClient.useSession();
 
   const totalBooks = books.length;
+
   const currentlyReading = books.filter(
     (book) => book.status === 'READING'
   ).length;
+
   const wantToRead = books.filter(
     (book) => book.status === 'WANT_TO_READ'
   ).length;
 
+  const hasBooks = books.length > 0;
   const stats = [
     {
       label: 'My books',
@@ -72,9 +75,11 @@ export default function DashboardPage() {
       iconClassName: 'bg-[#f8e4de] text-accent',
     },
   ] as const;
-  
-  const firstName = session?.user.name?.split(' ')[0] ?? 'Reader';
 
+  const firstName = session?.user.name?.split(' ')[0] ?? 'Reader';
+  const libraryMessage = hasBooks
+    ? `You have ${totalBooks} book${totalBooks === 1 ? '' : 's'} in your library.`
+    : 'You have no books in your library. Let’s get started.';
   return (
     <div className='space-y-8'>
       <section className='relative overflow-hidden rounded-3xl border border-border bg-surface p-6 shadow-[0_12px_30px_rgba(29,39,33,0.07)] sm:p-8'>
@@ -91,15 +96,16 @@ export default function DashboardPage() {
           </h2>
 
           <p className='mt-3 max-w-2xl leading-7 text-text-secondary'>
-            Your shelf is ready for its first story. Add a book, organize your
-            reading list, and make this library your own.
+            {libraryMessage}
           </p>
 
           <div className='mt-6'>
             <Link href='/dashboard/books/new'>
               <Button size='lg'>
                 <BookPlus className='size-4' />
-                Add your first book
+                {hasBooks
+                  ? 'Add another book'
+                  : 'Get started with your library'}
               </Button>
             </Link>
           </div>
