@@ -1,6 +1,6 @@
 'use client';
 
-import { BookOpen, Grid2X2, List, Plus, Search } from 'lucide-react';
+import { BookOpen, BookPlus, Grid2X2, List, Plus, Search } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
@@ -8,6 +8,7 @@ import { BookCard } from '@/components/books/book-card';
 import { BookListItem } from '@/components/books/book-list-item';
 import { Button } from '@/components/ui/button';
 import type { Book, BooksResponse } from '@/features/books/book.types';
+import { BooksLoadingSkeleton } from '@/components/dashboard/BooksLoadingSkeleton';
 
 type ViewMode = 'grid' | 'list';
 
@@ -46,6 +47,7 @@ export default function MyBooksPage() {
     void loadBooks();
   }, []);
 
+  const hasBooks = books.length > 0;
   if (isLoading) {
     return <BooksLoadingSkeleton />;
   }
@@ -53,7 +55,7 @@ export default function MyBooksPage() {
   if (errorMessage) {
     return (
       <section className='rounded-3xl border border-[#dfaaa0] bg-[#fff0ed] p-6'>
-        <h1 className='font-[family-name:var(--font-display)] text-2xl font-semibold text-danger'>
+        <h1 className='font-display text-2xl font-semibold text-danger'>
           We could not load your books
         </h1>
 
@@ -70,7 +72,7 @@ export default function MyBooksPage() {
             My bookshelf
           </p>
 
-          <h1 className='mt-2 font-[family-name:var(--font-display)] text-3xl font-semibold text-primary sm:text-4xl'>
+          <h1 className='mt-2 font-display text-3xl font-semibold text-primary sm:text-4xl'>
             Your books, your story.
           </h1>
 
@@ -80,12 +82,14 @@ export default function MyBooksPage() {
           </p>
         </div>
 
-        <Link href='/dashboard/books/new'>
-          <Button>
-            <Plus className='size-4' />
-            Add a book
-          </Button>
-        </Link>
+        <div className='mt-6'>
+          <Link href='/dashboard/books/new'>
+            <Button size='lg'>
+              <BookPlus className='size-4' />
+              {hasBooks ? 'Add another book' : 'Add your first book'}
+            </Button>
+          </Link>
+        </div>
       </section>
 
       {books.length === 0 ? (
@@ -186,33 +190,5 @@ function EmptyBooksState() {
         </Button>
       </Link>
     </section>
-  );
-}
-
-function BooksLoadingSkeleton() {
-  return (
-    <div className='space-y-7'>
-      <div>
-        <div className='h-4 w-28 animate-pulse rounded bg-[#ded3c1]' />
-        <div className='mt-3 h-10 w-72 max-w-full animate-pulse rounded bg-[#efe5d5]' />
-        <div className='mt-3 h-5 w-full max-w-xl animate-pulse rounded bg-[#efe5d5]' />
-      </div>
-
-      <div className='grid gap-5 sm:grid-cols-2 xl:grid-cols-3'>
-        {Array.from({ length: 6 }).map((_, index) => (
-          <div
-            key={index}
-            className='overflow-hidden rounded-2xl border border-border bg-surface'
-          >
-            <div className='aspect-[4/3] animate-pulse bg-[#efe5d5]' />
-            <div className='space-y-3 p-5'>
-              <div className='h-5 animate-pulse rounded bg-[#efe5d5]' />
-              <div className='h-4 w-2/3 animate-pulse rounded bg-[#efe5d5]' />
-              <div className='mt-6 h-4 w-1/2 animate-pulse rounded bg-[#efe5d5]' />
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
   );
 }

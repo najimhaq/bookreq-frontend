@@ -105,7 +105,7 @@ export default function DashboardPage() {
                 <BookPlus className='size-4' />
                 {hasBooks
                   ? 'Add another book'
-                  : 'Get started with your library'}
+                  : 'Add your first book'}
               </Button>
             </Link>
           </div>
