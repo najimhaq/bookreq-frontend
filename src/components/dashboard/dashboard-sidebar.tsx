@@ -22,33 +22,50 @@ type DashboardSidebarProps = {
   onNavigate?: () => void;
 };
 
-const navigationItems = [
+type NavigationId =
+  | 'overview'
+  | 'my-books'
+  | 'add-book'
+  | 'authors'
+  | 'reading-list';
+
+const navigationItems: ReadonlyArray<{
+  id: NavigationId;
+  label: string;
+  href: string;
+  icon: typeof LayoutDashboard;
+}> = [
   {
+    id: 'overview',
     label: 'Overview',
     href: '/dashboard',
     icon: LayoutDashboard,
   },
   {
+    id: 'my-books',
     label: 'My Books',
     href: '/dashboard/books',
     icon: LibraryBig,
   },
   {
+    id: 'add-book',
     label: 'Add Book',
     href: '/dashboard/books/new',
     icon: Plus,
   },
   {
+    id: 'authors',
     label: 'Authors',
     href: '/dashboard/authors',
     icon: BookCopy,
   },
   {
+    id: 'reading-list',
     label: 'Reading List',
     href: '/dashboard/reading-list',
     icon: BookOpen,
   },
-] as const;
+];
 
 export function DashboardSidebar({ onNavigate }: DashboardSidebarProps) {
   const pathname = usePathname();
@@ -56,15 +73,44 @@ export function DashboardSidebar({ onNavigate }: DashboardSidebarProps) {
 
   const { data: session, isPending } = authClient.useSession();
 
- const isAdmin = session?.user && session?.user.role === 'ADMIN';
+  const isAdmin = session?.user.role === 'ADMIN';
 
-  const isActive = (href: string) => {
-    if (href === '/dashboard') {
-      return pathname === href;
+  /*
+    Specific route আগে check করা হচ্ছে।
+    তাই /dashboard/books/new হলে শুধু "add-book" active হবে।
+  */
+  const activeMenu: NavigationId = (() => {
+    if (pathname === '/dashboard/books/new') {
+      return 'add-book';
     }
 
-    return pathname.startsWith(href);
-  };
+    if (
+      pathname === '/dashboard/books' ||
+      pathname.startsWith('/dashboard/books/')
+    ) {
+      return 'my-books';
+    }
+
+    if (
+      pathname === '/dashboard/authors' ||
+      pathname.startsWith('/dashboard/authors/')
+    ) {
+      return 'authors';
+    }
+
+    if (
+      pathname === '/dashboard/reading-list' ||
+      pathname.startsWith('/dashboard/reading-list/')
+    ) {
+      return 'reading-list';
+    }
+
+    return 'overview';
+  })();
+
+  const isProfileActive =
+    pathname === '/dashboard/profile' ||
+    pathname.startsWith('/dashboard/profile/');
 
   const handleSignOut = async () => {
     const { error } = await authClient.signOut();
@@ -95,11 +141,11 @@ export function DashboardSidebar({ onNavigate }: DashboardSidebarProps) {
 
         {navigationItems.map((item) => {
           const Icon = item.icon;
-          const active = isActive(item.href);
+          const active = activeMenu === item.id;
 
           return (
             <Link
-              key={item.href}
+              key={item.id}
               href={item.href}
               onClick={onNavigate}
               className={cn(
@@ -131,7 +177,7 @@ export function DashboardSidebar({ onNavigate }: DashboardSidebarProps) {
           onClick={onNavigate}
           className={cn(
             'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors',
-            isActive('/dashboard/profile')
+            isProfileActive
               ? 'bg-[#e7f0e8] text-primary'
               : 'text-text-secondary hover:bg-[#efe5d5] hover:text-primary'
           )}
@@ -139,7 +185,7 @@ export function DashboardSidebar({ onNavigate }: DashboardSidebarProps) {
           <CircleUserRound
             className={cn(
               'size-[18px]',
-              isActive('/dashboard/profile') ? 'text-accent' : 'text-text-muted'
+              isProfileActive ? 'text-accent' : 'text-text-muted'
             )}
           />
           Profile
