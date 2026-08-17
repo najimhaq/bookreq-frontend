@@ -1,3 +1,4 @@
+// src/components/dashboard/dashboard-sidebar.tsx
 'use client';
 
 import {
@@ -17,6 +18,7 @@ import toast from 'react-hot-toast';
 import { Logo } from '@/components/shared/logo';
 import { authClient } from '@/lib/auth-client';
 import { cn } from '@/lib/utils';
+import Image from 'next/image';
 
 type DashboardSidebarProps = {
   onNavigate?: () => void;
@@ -75,10 +77,7 @@ export function DashboardSidebar({ onNavigate }: DashboardSidebarProps) {
 
   const isAdmin = session?.user.role === 'ADMIN';
 
-  /*
-    Specific route আগে check করা হচ্ছে।
-    তাই /dashboard/books/new হলে শুধু "add-book" active হবে।
-  */
+
   const activeMenu: NavigationId = (() => {
     if (pathname === '/dashboard/books/new') {
       return 'add-book';
@@ -209,8 +208,18 @@ export function DashboardSidebar({ onNavigate }: DashboardSidebarProps) {
             <div className='h-10 animate-pulse rounded-lg bg-[#ded3c1]' />
           ) : (
             <div className='flex items-center gap-3'>
-              <div className='grid size-10 shrink-0 place-items-center rounded-full bg-primary text-sm font-bold text-white'>
-                {session?.user.name?.slice(0, 1).toUpperCase() ?? 'R'}
+              <div className='relative grid size-10 shrink-0 place-items-center overflow-hidden rounded-full bg-primary text-sm font-bold text-white'>
+                {session?.user.image ? (
+                  <Image
+                    src={session.user.image}
+                    alt={`${session.user.name ?? 'Reader'}'s profile photo`}
+                    fill
+                    sizes='40px'
+                    className='object-cover'
+                  />
+                ) : (
+                  (session?.user.name?.slice(0, 1).toUpperCase() ?? 'R')
+                )}
               </div>
 
               <div className='min-w-0'>

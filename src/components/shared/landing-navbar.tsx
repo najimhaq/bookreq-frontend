@@ -14,6 +14,7 @@ import {
 import { authClient } from '@/lib/auth-client';
 
 import { Logo } from './logo';
+import Image from 'next/image';
 
 const navigationItems = [
   { label: 'About', href: '#About' },
@@ -85,8 +86,18 @@ export function LandingNavbar() {
                   aria-expanded={isUserMenuOpen}
                   className='flex items-center gap-2 rounded-xl border border-border bg-surface py-1.5 pl-1.5 pr-2 transition-colors hover:bg-surface-elevated'
                 >
-                  <span className='grid size-7 place-items-center rounded-lg bg-[rgba(109,93,251,0.2)] text-xs font-bold text-[#C9C4FF]'>
-                    {userInitial}
+                  <span className='relative grid size-7 shrink-0 place-items-center overflow-hidden rounded-lg bg-[rgba(109,93,251,0.2)] text-xs font-bold text-[#C9C4FF]'>
+                    {session?.user.image ? (
+                      <Image
+                        src={session.user.image}
+                        alt={`${userName}'s profile photo`}
+                        fill
+                        sizes='28px'
+                        className='object-cover'
+                      />
+                    ) : (
+                      userInitial
+                    )}
                   </span>
 
                   <span className='hidden max-w-28 sm:block'>
