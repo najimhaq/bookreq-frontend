@@ -1,3 +1,4 @@
+//src/components/dashboard/page-placeholder.tsx
 import type { ReactNode } from 'react';
 
 type PagePlaceholderProps = {
@@ -31,7 +32,7 @@ export function PagePlaceholder({
           {eyebrow}
         </p>
 
-        <h1 className='mt-2 font-[family-name:var(--font-display)] text-3xl font-semibold text-primary sm:text-4xl'>
+        <h1 className='mt-2 font-display text-3xl font-semibold text-primary sm:text-4xl'>
           {title}
         </h1>
 
