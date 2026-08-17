@@ -13,10 +13,16 @@ export type Book = {
   author: {
     id: string;
     name: string;
+    bio: string | null;
   };
 };
 
 export type BooksResponse = {
   success: boolean;
   data: Book[];
+};
+
+export type BookResponse = {
+  success: boolean;
+  data: Book;
 };

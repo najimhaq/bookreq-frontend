@@ -170,7 +170,7 @@ function EmptyBooksState() {
         <BookOpen className='size-7' />
       </div>
 
-      <h2 className='mt-5 font-[family-name:var(--font-display)] text-2xl font-semibold text-primary'>
+      <h2 className='mt-5 font-display text-2xl font-semibold text-primary'>
         Your shelf is ready.
       </h2>
 
