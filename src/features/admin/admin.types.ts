@@ -45,3 +45,16 @@ export type AdminDashboardResponse = {
   data: AdminDashboardData;
   message?: string;
 };
+export type AdminUsersPagination = {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+};
+
+export type AdminUsersResponse = {
+  success: boolean;
+  data: RecentAdminUser[];
+  pagination: AdminUsersPagination;
+  message?: string;
+};

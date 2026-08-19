@@ -75,6 +75,7 @@ export function DashboardSidebar({ onNavigate }: DashboardSidebarProps) {
 
   const { data: session, isPending } = authClient.useSession();
 
+
   const isAdmin = session?.user.role === 'ADMIN';
 
 
@@ -190,7 +191,7 @@ export function DashboardSidebar({ onNavigate }: DashboardSidebarProps) {
           Profile
         </Link>
 
-        {isAdmin ? (
+        {!isPending && isAdmin ? (
           <Link
             href='/admin'
             onClick={onNavigate}

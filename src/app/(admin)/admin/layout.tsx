@@ -1,24 +1,26 @@
 // src/app/(admin)/admin/layout.tsx
 'use client';
 
+import type { ReactNode } from 'react';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { authClient } from '@/lib/auth-client';
+import { AdminShell } from '@/components/admin/admin-shell';
 
-type AdminLayoutProps = {
-  children: React.ReactNode;
-};
+export default function AdminLayout({ children }: { children: ReactNode }) {
 
-export default function AdminLayout({ children }: AdminLayoutProps) {
   const router = useRouter();
   const { data: session, isPending } = authClient.useSession();
 
+  const role = session?.user.role;
+
+
   useEffect(() => {
-    if (!isPending && session?.user.role !== 'ADMIN') {
+    if (!isPending && role !== 'ADMIN') {
       router.replace('/dashboard');
     }
-  }, [isPending, router, session?.user.role]);
+  }, [isPending, role, router]);
 
   if (isPending) {
     return (
@@ -28,9 +30,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     );
   }
 
-  if (session?.user.role !== 'ADMIN') {
+  if (role !== 'ADMIN') {
     return null;
   }
 
-  return <div className='min-h-screen bg-canvas'>{children}</div>;
+  return <AdminShell>{children}</AdminShell>;
 }
