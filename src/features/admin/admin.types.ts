@@ -83,3 +83,31 @@ export type AdminBooksResponse = {
   pagination: AdminUsersPagination;
   message?: string;
 };
+
+export interface AdminAuthor {
+  id: string;
+  name: string;
+  bio: string | null;
+  createdAt: string;
+  updatedAt: string;
+  _count: {
+    books: number;
+  };
+}
+
+export interface AdminAuthorsResponse {
+  success: boolean;
+  data: AdminAuthor[];
+  pagination: AdminUsersPagination;
+}
+
+export interface CreateAdminAuthorPayload {
+  name: string;
+  bio?: string;
+}
+
+export interface CreateAdminAuthorResponse {
+  success: boolean;
+  message: string;
+  data: AdminAuthor;
+}
