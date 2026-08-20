@@ -1,276 +1,420 @@
 'use client';
 
-import { ChevronLeft, ChevronRight, Search, UsersRound } from 'lucide-react';
+import {
+  BookMarked,
+  BookOpen,
+  LibraryBig,
+  ShieldCheck,
+  UserRound,
+  Users,
+} from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
-import { getAdminUsers } from '@/features/admin/admin.api';
+import { getAdminDashboard } from '@/features/admin/admin.api';
 import type {
-  AdminUsersPagination,
-  RecentAdminUser,
+  AdminBookStatus,
+  AdminDashboardBook,
+  AdminDashboardData,
+  AdminDashboardUser,
 } from '@/features/admin/admin.types';
 
-const defaultPagination: AdminUsersPagination = {
-  page: 1,
-  limit: 10,
-  total: 0,
-  totalPages: 0,
+const statusStyles: Record<
+  AdminBookStatus,
+  {
+    label: string;
+    className: string;
+  }
+> = {
+  WANT_TO_READ: {
+    label: 'Want to read',
+    className: 'bg-[#fff0d3] text-[#9a6515]',
+  },
+  READING: {
+    label: 'Reading',
+    className: 'bg-[#e7f0e8] text-primary',
+  },
+  COMPLETED: {
+    label: 'Completed',
+    className: 'bg-[#e5eef4] text-[#2d6178]',
+  },
 };
 
-export default function AdminUsersPage() {
-  const [users, setUsers] = useState<RecentAdminUser[]>([]);
-  const [pagination, setPagination] =
-    useState<AdminUsersPagination>(defaultPagination);
-
-  const [searchInput, setSearchInput] = useState('');
-  const [search, setSearch] = useState('');
-
+export default function AdminDashboardPage() {
+  const [dashboard, setDashboard] = useState<AdminDashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
-    const loadUsers = async () => {
+    const loadDashboard = async () => {
       try {
         setIsLoading(true);
         setErrorMessage('');
 
-        const result = await getAdminUsers({
-          page: pagination.page,
-          limit: pagination.limit,
-          search,
-        });
-
-        setUsers(result.data);
-        setPagination(result.pagination);
+        const result = await getAdminDashboard();
+        setDashboard(result);
       } catch (error) {
         setErrorMessage(
-          error instanceof Error ? error.message : 'Unable to load users.'
+          error instanceof Error
+            ? error.message
+            : 'Unable to load admin dashboard.'
         );
       } finally {
         setIsLoading(false);
       }
     };
 
-    void loadUsers();
-  }, [pagination.page, pagination.limit, search]);
-
-  const handleSearch = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    setPagination((current) => ({
-      ...current,
-      page: 1,
-    }));
-
-    setSearch(searchInput.trim());
-  };
-
-  const goToPreviousPage = () => {
-    setPagination((current) => ({
-      ...current,
-      page: Math.max(1, current.page - 1),
-    }));
-  };
-
-  const goToNextPage = () => {
-    setPagination((current) => ({
-      ...current,
-      page: Math.min(current.totalPages, current.page + 1),
-    }));
-  };
+    void loadDashboard();
+  }, []);
 
   return (
     <main className='mx-auto max-w-7xl space-y-8 p-5 sm:p-8'>
       <section className='relative overflow-hidden rounded-3xl border border-border bg-surface p-6 shadow-[0_12px_30px_rgba(29,39,33,0.07)] sm:p-8'>
-        <div className='absolute -right-16 -top-16 size-52 rounded-full bg-[#e7f0e8] blur-3xl' />
+        <div className='absolute -right-20 -top-20 size-64 rounded-full bg-[#e7f0e8] blur-3xl' />
+        <div className='absolute bottom-0 right-40 size-36 rounded-full bg-[#fff0d3] blur-3xl' />
 
         <div className='relative'>
           <div className='grid size-12 place-items-center rounded-2xl bg-primary text-white'>
-            <UsersRound className='size-6' />
+            <ShieldCheck className='size-6' />
           </div>
 
-          <p className='mt-6 text-sm font-bold uppercase tracking-[0.16em] text-accent'>
+          <p className='mt-6 text-sm font-bold uppercase tracking-[0.16em] text-primary'>
             Administration
           </p>
 
           <h1 className='mt-2 font-display text-3xl font-semibold text-primary sm:text-4xl'>
-            User management
+            Dashboard overview
           </h1>
 
           <p className='mt-3 max-w-2xl leading-7 text-text-secondary'>
-            Review registered readers, their account roles, and their library
-            activity.
+            Monitor your reading platform, review recent activity, and manage
+            readers, books, and authors from one place.
           </p>
         </div>
       </section>
 
-      <section className='rounded-3xl border border-border bg-surface p-5 shadow-[0_8px_24px_rgba(29,39,33,0.05)] sm:p-6'>
-        <form
-          onSubmit={handleSearch}
-          className='flex flex-col gap-3 sm:flex-row'
-        >
-          <label className='relative flex-1'>
-            <span className='sr-only'>Search users</span>
-
-            <Search className='pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-text-muted' />
-
-            <input
-              type='search'
-              value={searchInput}
-              onChange={(event) => setSearchInput(event.target.value)}
-              placeholder='Search by name or email...'
-              className='h-11 w-full rounded-xl border border-border bg-[#fffaf0] pl-10 pr-3 text-sm text-primary outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20'
+      {errorMessage ? (
+        <section className='rounded-3xl border border-danger/20 bg-danger/10 p-6 text-center text-sm text-danger'>
+          {errorMessage}
+        </section>
+      ) : (
+        <>
+          <section className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+            <DashboardStatCard
+              label='Registered users'
+              value={dashboard?.totalUsers}
+              description='Reader accounts in the platform'
+              icon={<Users className='size-6' />}
+              tone='blue'
+              isLoading={isLoading}
             />
-          </label>
 
-          <button
-            type='submit'
-            className='h-11 rounded-xl bg-primary px-5 text-sm font-bold text-white transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60'
-            disabled={isLoading}
-          >
-            Search
-          </button>
-        </form>
+            <DashboardStatCard
+              label='Books tracked'
+              value={dashboard?.totalBooks}
+              description='Books across all user libraries'
+              icon={<BookOpen className='size-6' />}
+              tone='green'
+              isLoading={isLoading}
+            />
 
-        <div className='mt-6 overflow-x-auto'>
-          <table className='w-full min-w-[720px] border-separate border-spacing-0 text-left'>
-            <thead>
-              <tr className='text-xs uppercase tracking-[0.12em] text-text-muted'>
-                <th className='border-b border-border px-3 py-3 font-bold'>
-                  User
-                </th>
+            <DashboardStatCard
+              label='Authors'
+              value={dashboard?.totalAuthors}
+              description='Authors in the shared catalogue'
+              icon={<LibraryBig className='size-6' />}
+              tone='gold'
+              isLoading={isLoading}
+            />
+          </section>
 
-                <th className='border-b border-border px-3 py-3 font-bold'>
-                  Role
-                </th>
+          <section className='grid gap-6 xl:grid-cols-[minmax(0,1.55fr)_minmax(340px,0.85fr)]'>
+            <RecentBooksPanel
+              books={dashboard?.recentBooks ?? []}
+              isLoading={isLoading}
+            />
 
-                <th className='border-b border-border px-3 py-3 font-bold'>
-                  Books
-                </th>
-
-                <th className='border-b border-border px-3 py-3 font-bold'>
-                  Joined
-                </th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {isLoading ? (
-                <UserTableSkeleton />
-              ) : errorMessage ? (
-                <tr>
-                  <td
-                    colSpan={4}
-                    className='px-3 py-10 text-center text-sm text-danger'
-                  >
-                    {errorMessage}
-                  </td>
-                </tr>
-              ) : users.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={4}
-                    className='px-3 py-10 text-center text-sm text-text-secondary'
-                  >
-                    No users found.
-                  </td>
-                </tr>
-              ) : (
-                users.map((user) => <UserTableRow key={user.id} user={user} />)
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        <div className='mt-5 flex flex-col gap-3 border-t border-border pt-5 sm:flex-row sm:items-center sm:justify-between'>
-          <p className='text-sm text-text-secondary'>
-            Showing {users.length} of {pagination.total} user
-            {pagination.total === 1 ? '' : 's'}
-          </p>
-
-          <div className='flex items-center gap-2'>
-            <button
-              type='button'
-              onClick={goToPreviousPage}
-              disabled={isLoading || pagination.page <= 1}
-              className='inline-flex size-10 items-center justify-center rounded-xl border border-border bg-surface text-text-secondary transition hover:bg-[#efe5d5] disabled:cursor-not-allowed disabled:opacity-50'
-              aria-label='Previous page'
-            >
-              <ChevronLeft className='size-4' />
-            </button>
-
-            <span className='min-w-24 text-center text-sm font-bold text-primary'>
-              Page {pagination.page} of {Math.max(1, pagination.totalPages)}
-            </span>
-
-            <button
-              type='button'
-              onClick={goToNextPage}
-              disabled={
-                isLoading ||
-                pagination.totalPages === 0 ||
-                pagination.page >= pagination.totalPages
-              }
-              className='inline-flex size-10 items-center justify-center rounded-xl border border-border bg-surface text-text-secondary transition hover:bg-[#efe5d5] disabled:cursor-not-allowed disabled:opacity-50'
-              aria-label='Next page'
-            >
-              <ChevronRight className='size-4' />
-            </button>
-          </div>
-        </div>
-      </section>
+            <RecentUsersPanel
+              users={dashboard?.recentUsers ?? []}
+              isLoading={isLoading}
+            />
+          </section>
+        </>
+      )}
     </main>
   );
 }
 
-function UserTableRow({ user }: { user: RecentAdminUser }) {
+function DashboardStatCard({
+  label,
+  value,
+  description,
+  icon,
+  tone,
+  isLoading,
+}: {
+  label: string;
+  value: number | undefined;
+  description: string;
+  icon: React.ReactNode;
+  tone: 'blue' | 'green' | 'gold';
+  isLoading: boolean;
+}) {
+  const tones = {
+    blue: {
+      icon: 'bg-[#e5eef4] text-[#2d6178]',
+      accent: 'bg-[#d7e6ef]',
+    },
+    green: {
+      icon: 'bg-[#e7f0e8] text-primary',
+      accent: 'bg-[#d8eadb]',
+    },
+    gold: {
+      icon: 'bg-[#fff0d3] text-[#9a6515]',
+      accent: 'bg-[#f8e0b4]',
+    },
+  };
+
   return (
-    <tr className='transition-colors hover:bg-[#fffaf0]'>
-      <td className='border-b border-border px-3 py-4'>
-        <div>
-          <p className='font-bold text-primary'>{user.name}</p>
-          <p className='mt-1 text-sm text-text-secondary'>{user.email}</p>
-        </div>
-      </td>
+    <article className='relative overflow-hidden rounded-3xl border border-border bg-surface p-5 shadow-[0_8px_24px_rgba(29,39,33,0.05)] sm:p-6'>
+      <div
+        className={`absolute -bottom-12 -right-10 size-32 rounded-full blur-2xl ${tones[tone].accent}`}
+      />
 
-      <td className='border-b border-border px-3 py-4'>
-        <span
-          className={`inline-flex rounded-full px-2.5 py-1 text-xs font-bold ${
-            user.role === 'ADMIN'
-              ? 'bg-[#fff0d3] text-[#9a6515]'
-              : 'bg-[#e7f0e8] text-primary'
-          }`}
+      <div className='relative'>
+        <div
+          className={`grid size-11 place-items-center rounded-2xl ${tones[tone].icon}`}
         >
-          {user.role}
-        </span>
-      </td>
+          {icon}
+        </div>
 
-      <td className='border-b border-border px-3 py-4 text-sm font-semibold text-primary'>
-        {user._count.books}
-      </td>
+        <p className='mt-5 text-sm font-bold uppercase tracking-[0.12em] text-text-muted'>
+          {label}
+        </p>
 
-      <td className='border-b border-border px-3 py-4 text-sm text-text-secondary'>
-        {new Intl.DateTimeFormat('en', {
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric',
-        }).format(new Date(user.createdAt))}
-      </td>
-    </tr>
+        {isLoading ? (
+          <div className='mt-2 h-10 w-24 animate-pulse rounded-lg bg-[#efe5d5]' />
+        ) : (
+          <p className='mt-2 text-4xl font-bold tracking-tight text-primary'>
+            {value ?? 0}
+          </p>
+        )}
+
+        <p className='mt-2 text-sm leading-6 text-text-secondary'>
+          {description}
+        </p>
+      </div>
+    </article>
   );
 }
 
-function UserTableSkeleton() {
+function RecentBooksPanel({
+  books,
+  isLoading,
+}: {
+  books: AdminDashboardBook[];
+  isLoading: boolean;
+}) {
+  return (
+    <section className='rounded-3xl border border-border bg-surface p-5 shadow-[0_8px_24px_rgba(29,39,33,0.05)] sm:p-6'>
+      <div className='flex items-start justify-between gap-4'>
+        <div>
+          <p className='text-sm font-bold uppercase tracking-[0.12em] text-text-muted'>
+            Recent activity
+          </p>
+
+          <h2 className='mt-1 font-display text-2xl font-semibold text-primary'>
+            Recently added books
+          </h2>
+        </div>
+
+        <Link
+          href='/admin/books'
+          className='shrink-0 text-sm font-bold text-primary underline-offset-4 transition hover:underline'
+        >
+          View all
+        </Link>
+      </div>
+
+      <div className='mt-5 space-y-3'>
+        {isLoading ? (
+          <RecentBooksSkeleton />
+        ) : books.length === 0 ? (
+          <p className='rounded-2xl bg-[#fffaf0] px-4 py-10 text-center text-sm text-text-secondary'>
+            No books have been added yet.
+          </p>
+        ) : (
+          books.map((book) => <RecentBookRow key={book.id} book={book} />)
+        )}
+      </div>
+    </section>
+  );
+}
+
+function RecentBookRow({ book }: { book: AdminDashboardBook }) {
+  const status = statusStyles[book.status];
+
+  return (
+    <article className='flex items-center gap-3 rounded-2xl border border-border bg-[#fffdf8] p-3 transition hover:bg-[#fffaf0]'>
+      <div className='relative grid size-14 shrink-0 place-items-center overflow-hidden rounded-xl bg-[#efe5d5] text-[#9a6515]'>
+        {book.coverImageUrl ? (
+          <Image
+            src={book.coverImageUrl}
+            alt={`Cover of ${book.title}`}
+            fill
+            sizes='56px'
+            className='object-cover'
+          />
+        ) : (
+          <BookMarked className='size-6' />
+        )}
+      </div>
+
+      <div className='min-w-0 flex-1'>
+        <p className='truncate font-bold text-primary'>{book.title}</p>
+
+        <p className='mt-1 truncate text-sm text-text-secondary'>
+          {book.author.name} · Added by {book.user.name}
+        </p>
+
+        <p className='mt-1 text-xs text-text-muted'>
+          {formatDate(book.createdAt)}
+        </p>
+      </div>
+
+      <span
+        className={`hidden shrink-0 rounded-full px-2.5 py-1 text-xs font-bold sm:inline-flex ${status.className}`}
+      >
+        {status.label}
+      </span>
+    </article>
+  );
+}
+
+function RecentUsersPanel({
+  users,
+  isLoading,
+}: {
+  users: AdminDashboardUser[];
+  isLoading: boolean;
+}) {
+  return (
+    <section className='rounded-3xl border border-border bg-surface p-5 shadow-[0_8px_24px_rgba(29,39,33,0.05)] sm:p-6'>
+      <div className='flex items-start justify-between gap-4'>
+        <div>
+          <p className='text-sm font-bold uppercase tracking-[0.12em] text-text-muted'>
+            Community
+          </p>
+
+          <h2 className='mt-1 font-display text-2xl font-semibold text-primary'>
+            Recent users
+          </h2>
+        </div>
+
+        <Link
+          href='/admin/users'
+          className='shrink-0 text-sm font-bold text-primary underline-offset-4 transition hover:underline'
+        >
+          View all
+        </Link>
+      </div>
+
+      <div className='mt-5 space-y-3'>
+        {isLoading ? (
+          <RecentUsersSkeleton />
+        ) : users.length === 0 ? (
+          <p className='rounded-2xl bg-[#fffaf0] px-4 py-10 text-center text-sm text-text-secondary'>
+            No users have registered yet.
+          </p>
+        ) : (
+          users.map((user) => <RecentUserRow key={user.id} user={user} />)
+        )}
+      </div>
+    </section>
+  );
+}
+
+function RecentUserRow({ user }: { user: AdminDashboardUser }) {
+  const isAdmin = user.role === 'ADMIN';
+
+  return (
+    <article className='flex items-center gap-3 rounded-2xl border border-border bg-[#fffdf8] p-3 transition hover:bg-[#fffaf0]'>
+      <div className='relative grid size-11 shrink-0 place-items-center overflow-hidden rounded-xl bg-[#e7f0e8] text-primary'>
+        {user.image ? (
+          <Image
+            src={user.image}
+            alt={`${user.name}'s profile`}
+            fill
+            sizes='44px'
+            className='object-cover'
+          />
+        ) : (
+          <UserRound className='size-5' />
+        )}
+      </div>
+
+      <div className='min-w-0 flex-1'>
+        <p className='truncate font-bold text-primary'>{user.name}</p>
+
+        <p className='mt-1 truncate text-sm text-text-secondary'>
+          {user.email}
+        </p>
+
+        <p className='mt-1 text-xs text-text-muted'>
+          Joined {formatDate(user.createdAt)}
+        </p>
+      </div>
+
+      <div className='shrink-0 text-right'>
+        <span
+          className={`inline-flex rounded-full px-2.5 py-1 text-xs font-bold ${
+            isAdmin
+              ? 'bg-[#e5eef4] text-[#2d6178]'
+              : 'bg-[#e7f0e8] text-primary'
+          }`}
+        >
+          {isAdmin ? 'Admin' : 'User'}
+        </span>
+
+        <p className='mt-1 text-xs font-semibold text-text-secondary'>
+          {user._count.books} book{user._count.books === 1 ? '' : 's'}
+        </p>
+      </div>
+    </article>
+  );
+}
+
+function RecentBooksSkeleton() {
   return (
     <>
-      {[1, 2, 3, 4, 5].map((row) => (
-        <tr key={row}>
-          {[1, 2, 3, 4].map((column) => (
-            <td key={column} className='border-b border-border px-3 py-4'>
-              <div className='h-5 animate-pulse rounded bg-[#efe5d5]' />
-            </td>
-          ))}
-        </tr>
+      {[1, 2, 3, 4, 5].map((item) => (
+        <div
+          key={item}
+          className='h-20 animate-pulse rounded-2xl bg-[#fffaf0]'
+        />
       ))}
     </>
   );
+}
+
+function RecentUsersSkeleton() {
+  return (
+    <>
+      {[1, 2, 3].map((item) => (
+        <div
+          key={item}
+          className='h-20 animate-pulse rounded-2xl bg-[#fffaf0]'
+        />
+      ))}
+    </>
+  );
+}
+
+function formatDate(value: string) {
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(new Date(value));
 }

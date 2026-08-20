@@ -55,12 +55,7 @@ const navigationItems: ReadonlyArray<{
     href: '/dashboard/books/new',
     icon: Plus,
   },
-  {
-    id: 'authors',
-    label: 'Authors',
-    href: '/dashboard/authors',
-    icon: BookCopy,
-  },
+
   {
     id: 'reading-list',
     label: 'Reading List',
@@ -75,9 +70,7 @@ export function DashboardSidebar({ onNavigate }: DashboardSidebarProps) {
 
   const { data: session, isPending } = authClient.useSession();
 
-
   const isAdmin = session?.user.role === 'ADMIN';
-
 
   const activeMenu: NavigationId = (() => {
     if (pathname === '/dashboard/books/new') {

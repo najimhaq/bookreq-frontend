@@ -47,7 +47,7 @@ export async function getAdminUsers({
   }
 
   const response = await apiClient.get<AdminUsersResponse>(
-    `/admin/users?${query.toString()}`
+    `/api/admin/users?${query.toString()}`
   );
 
   return response.data;

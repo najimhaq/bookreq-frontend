@@ -40,7 +40,7 @@ export default function HomePage() {
                 </Link>
 
                 <Link
-                  href='/books'
+                  href='/dashboard/books'
                   className='inline-flex items-center rounded-lg border border-border bg-surface px-7 py-3.5 text-base font-semibold text-primary transition hover:border-accent hover:bg-[#fff7f0]'
                 >
                   Explore your shelf
