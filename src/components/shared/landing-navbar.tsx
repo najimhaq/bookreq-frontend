@@ -1,7 +1,8 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   ArrowRight,
   ChevronDown,
@@ -14,12 +15,10 @@ import {
 import { authClient } from '@/lib/auth-client';
 
 import { Logo } from './logo';
-import Image from 'next/image';
 
 const navigationItems = [
   { label: 'About', href: '#About' },
-  { label: 'Books', href: '#Books' },
-  { label: 'Authors', href: '#Authors' },
+  { label: 'Books', href: '/dashboard/books' },
 ] as const;
 
 export function LandingNavbar() {
@@ -27,6 +26,10 @@ export function LandingNavbar() {
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+
+  const userMenuRef = useRef<HTMLDivElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const mobileMenuButtonRef = useRef<HTMLButtonElement>(null);
 
   const userName = session?.user.name ?? 'Bookreq user';
   const userEmail = session?.user.email ?? '';
@@ -36,6 +39,39 @@ export function LandingNavbar() {
     setIsMobileMenuOpen(false);
     setIsUserMenuOpen(false);
   };
+
+  useEffect(() => {
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target as Node;
+
+      if (userMenuRef.current && !userMenuRef.current.contains(target)) {
+        setIsUserMenuOpen(false);
+      }
+
+      const clickedInsideMobileMenu = mobileMenuRef.current?.contains(target);
+
+      const clickedMobileMenuButton =
+        mobileMenuButtonRef.current?.contains(target);
+
+      if (!clickedInsideMobileMenu && !clickedMobileMenuButton) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        closeMenus();
+      }
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
 
   const handleSignOut = async () => {
     await authClient.signOut();
@@ -76,7 +112,7 @@ export function LandingNavbar() {
                 Dashboard
               </Link>
 
-              <div className='relative'>
+              <div ref={userMenuRef} className='relative'>
                 <button
                   type='button'
                   onClick={() =>
@@ -87,7 +123,7 @@ export function LandingNavbar() {
                   className='flex items-center gap-2 rounded-xl border border-border bg-surface py-1.5 pl-1.5 pr-2 transition-colors hover:bg-surface-elevated'
                 >
                   <span className='relative grid size-7 shrink-0 place-items-center overflow-hidden rounded-lg bg-[rgba(109,93,251,0.2)] text-xs font-bold text-[#C9C4FF]'>
-                    {session?.user.image ? (
+                    {session.user.image ? (
                       <Image
                         src={session.user.image}
                         alt={`${userName}'s profile photo`}
@@ -166,6 +202,7 @@ export function LandingNavbar() {
           )}
 
           <button
+            ref={mobileMenuButtonRef}
             type='button'
             onClick={() => setIsMobileMenuOpen((currentValue) => !currentValue)}
             aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
@@ -182,7 +219,10 @@ export function LandingNavbar() {
       </div>
 
       {isMobileMenuOpen ? (
-        <div className='border-t border-border bg-canvas px-5 py-5 md:hidden'>
+        <div
+          ref={mobileMenuRef}
+          className='border-t border-border bg-canvas px-5 py-5 md:hidden'
+        >
           <nav className='flex flex-col gap-1'>
             {navigationItems.map((item) => (
               <Link
