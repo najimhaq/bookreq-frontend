@@ -58,3 +58,28 @@ export type AdminUsersResponse = {
   pagination: AdminUsersPagination;
   message?: string;
 };
+
+export type AdminBook = {
+  id: string;
+  title: string;
+  coverImageUrl: string | null;
+  publishedYear: number | null;
+  status: AdminBookStatus;
+  createdAt: string;
+  author: {
+    id: string;
+    name: string;
+  };
+  user: {
+    id: string;
+    name: string;
+    email: string;
+  };
+};
+
+export type AdminBooksResponse = {
+  success: boolean;
+  data: AdminBook[];
+  pagination: AdminUsersPagination;
+  message?: string;
+};
