@@ -1,4 +1,5 @@
 <div align="center">
+
 # Bookreq
 
 > A polished reading companion for tracking books, discovering authors, and managing a personal library — with a dedicated admin workspace for the whole platform.
