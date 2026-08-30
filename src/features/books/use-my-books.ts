@@ -1,4 +1,3 @@
-// src/features/books/use-my-books.ts
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
@@ -29,7 +28,7 @@ export function useMyBooks() {
   }, []);
 
   useEffect(() => {
-    void refetch(false);
+    void refetch();
   }, [refetch]);
 
   return {

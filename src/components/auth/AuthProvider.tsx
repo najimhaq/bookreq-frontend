@@ -1,41 +1,35 @@
-// src/components/auth/AuthProvider.tsx
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
-import { authClient, useSession } from '@/lib/auth-client';
-import { useRouter, usePathname } from 'next/navigation';
+import { createContext, useContext, useEffect } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+
+import { authClient } from '@/lib/auth-client';
 
 interface AuthContextType {
-  user: any;
-  session: any;
+  user: Record<string, unknown> | null;
+  session: Record<string, unknown> | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  signIn: (email: string, password: string) => Promise<any>;
-  signUp: (name: string, email: string, password: string) => Promise<any>;
+  signIn: (email: string, password: string) => Promise<Record<string, unknown>>;
+  signUp: (name: string, email: string, password: string) => Promise<Record<string, unknown>>;
   signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const publicPaths = ['/login', '/register', '/forgot-password', '/'];
+const publicPaths = ['/', '/login', '/register', '/forgot-password'];
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { data: session, isPending } = useSession();
-  const [isLoading, setIsLoading] = useState(true);
+
+  const { data: session, isPending } = authClient.useSession();
+
+  const isLoading = isPending;
 
   useEffect(() => {
-    setIsLoading(isPending);
-  }, [isPending]);
-
-  // Auto-redirect logic
-  useEffect(() => {
-    if (!isPending && !session) {
-      // Redirect to login for protected routes
-      if (!publicPaths.includes(pathname as string)) {
-        router.push('/login');
-      }
+    if (!isPending && !session && !publicPaths.includes(pathname)) {
+      router.push('/login');
     }
 
     if (session && (pathname === '/login' || pathname === '/register')) {
@@ -44,10 +38,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [session, isPending, pathname, router]);
 
   const value: AuthContextType = {
-    user: session?.user || null,
-    session: session || null,
+    user: session?.user ?? null,
+    session: session ?? null,
     isLoading,
-    isAuthenticated: !!session,
+    isAuthenticated: Boolean(session),
+
     signIn: async (email: string, password: string) => {
       return authClient.signIn.email({
         email,
@@ -55,16 +50,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         callbackURL: '/dashboard',
       });
     },
+
     signUp: async (name: string, email: string, password: string) => {
       return authClient.signUp.email({
         name,
         email,
         password,
+        role: 'USER',
         callbackURL: '/login',
       });
     },
+
     signOut: async () => {
       await authClient.signOut();
+
       router.push('/');
       router.refresh();
     },
@@ -75,8 +74,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
+
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
+
   return context;
 }

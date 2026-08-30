@@ -2,7 +2,6 @@
 'use client';
 
 import {
-  BookCopy,
   BookOpen,
   CircleUserRound,
   LayoutDashboard,
