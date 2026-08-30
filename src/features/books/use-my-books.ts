@@ -27,9 +27,9 @@ export function useMyBooks() {
     }
   }, []);
 
-  useEffect(() => {
-    void refetch();
-  }, [refetch]);
+    useEffect(() => {
+      void refetch();
+    }, [refetch]);
 
   return {
     books,
